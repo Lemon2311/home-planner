@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Planner App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        input, select, button, label {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .task {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .task strong {
+            color: #333;
+        }
+        #attendeesCheckboxes label, #cycleAttendeesLabel {
+            display: block;
+            margin-bottom: 5px;
+        }
+        #customFrequency, #specificDate {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Home Planner App</h1>
+
+        <div id="loginSection">
+            <input type="text" id="usernameInput" placeholder="Username">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button onclick="login()">Login</button>
+        </div>
+
+        <div id="taskSection" style="display: none;">
+            <input type="text" id="taskInput" placeholder="Enter a task">
+            <div id="attendeesCheckboxes">
+                <label><input type="checkbox" value="marco"> Marco</label>
+                <label><input type="checkbox" value="radu"> Radu</label>
+                <label><input type="checkbox" value="sepi"> Sepi</label>
+            </div>
+            <label id="cycleAttendeesLabel"><input type="checkbox" id="cycleAttendees"> Cycle attendees</label>
+            <select id="taskFrequency" onchange="toggleFrequencyOptions()">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="custom">Every few days</option>
+                <option value="specificDate">Specific Date</option>
+            </select>
+            <input type="number" id="customFrequency" placeholder="Days (for custom frequency)" min="1">
+            <input type="date" id="specificDate">
+            <button onclick="addTask()">Add Task</button>
+            <div id="tasks"></div>
+        </div>
+    </div>
+
+    <script>
+        let users = {
+            'marco': 'randPass1',
+            'radu': 'randPass2',
+            'sepi': 'randPass3'
+        };
+        let tasks = [];
+        let currentUser = null;
+
+        function login() {
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+            if (users[username] && users[username] === password) {
+                currentUser = username;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('taskSection').style.display = 'block';
+                renderTasks();
+            } else {
+                alert('Invalid username or password');
+            }
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const task = taskInput.value;
+            const checkboxes = document.querySelectorAll('#attendeesCheckboxes input:checked');
+            const selectedAttendees = Array.from(checkboxes).map(cb => cb.value);
+            const cycleAttendees = document.getElementById('cycleAttendees').checked;
+            const taskFrequencySelect = document.getElementById('taskFrequency');
+            const taskFrequency = taskFrequencySelect.value;
+            const customFrequency = taskFrequency === 'custom' ? document.getElementById('customFrequency').value : null;
+            const specificDate = taskFrequency === 'specificDate' ? document.getElementById('specificDate').value : null;
+            tasks.push({ task, user: currentUser, attendees: selectedAttendees, frequency: taskFrequency, customFrequency, specificDate, cycleAttendees, currentAttendeeIndex: 0 });
+            taskInput.value = '';
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const tasksContainer = document.getElementById('tasks');
+            tasksContainer.innerHTML = '';
+            tasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task';
+                const currentAttendee = task.cycleAttendees ? task.attendees[task.currentAttendeeIndex] : task.attendees.join(', ');
+                taskDiv.innerHTML = `<strong>Task:</strong> ${task.task}<br>
+                                     <strong>Attendee(s):</strong> ${currentAttendee}<br>
+                                     <strong>Frequency:</strong> ${formatFrequency(task.frequency, task.customFrequency, task.specificDate)}`;
+                tasksContainer.appendChild(taskDiv);
+                if (task.cycleAttendees) {
+                    task.currentAttendeeIndex = (task.currentAttendeeIndex + 1) % task.attendees.length;
+                }
+            });
+        }
+
+        function toggleFrequencyOptions() {
+            const taskFrequencySelect = document.getElementById('taskFrequency');
+            document.getElementById('customFrequency').style.display = taskFrequencySelect.value === 'custom' ? 'block' : 'none';
+            document.getElementById('specificDate').style.display = taskFrequencySelect.value === 'specificDate' ? 'block' : 'none';
+        }
+
+        function formatFrequency(frequency, customFrequency, specificDate) {
+            switch (frequency) {
+                case 'custom':
+                    return `Every ${customFrequency} days`;
+                case 'specificDate':
+                    return `On ${specificDate}`;
+                default:
+                    return frequency.charAt(0).toUpperCase() + frequency.slice(1);
+            }
+        }
+    </script>
+</body>
+</html>
