@@ -57,7 +57,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        #customFrequency, #specificDate {
+        #customFrequency, #nrOfDays {
             display: none;
             margin-top: 10px;
         }
@@ -75,20 +75,24 @@
 
         <div id="taskSection" style="display: none;">
             <input type="text" id="taskInput" placeholder="Enter a task">
+            
+            <div id="dateFields">
+                <input type="date" id="startDate" placeholder="Start Date" onchange="toggleFrequencyOptions()">
+                <select id="frequencySelect" onchange="toggleFrequencyOptions()">
+                    <option value="singleTime">Single Time</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="custom">Every few days</option>
+                </select>
+                <input type="number" id="nrOfDays" placeholder="Nr of Days (for custom frequency)" min="1">
+            </div>
+            
             <div id="attendeesCheckboxes">
                 <label><input type="checkbox" value="marco"> Marco</label>
                 <label><input type="checkbox" value="radu"> Radu</label>
                 <label><input type="checkbox" value="sepi"> Sepi</label>
             </div>
             <label id="cycleAttendeesLabel"><input type="checkbox" id="cycleAttendees"> Cycle attendees</label>
-            <select id="taskFrequency" onchange="toggleFrequencyOptions()">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="custom">Every few days</option>
-                <option value="specificDate">Specific Date</option>
-            </select>
-            <input type="number" id="customFrequency" placeholder="Days (for custom frequency)" min="1">
-            <input type="date" id="specificDate">
             <button onclick="addTask()">Add Task</button>
             <div id="tasks"></div>
         </div>
@@ -119,15 +123,22 @@
         function addTask() {
             const taskInput = document.getElementById('taskInput');
             const task = taskInput.value;
+            const startDate = document.getElementById('startDate').value;
+            const taskFrequencySelect = document.getElementById('frequencySelect');
+            const taskFrequency = taskFrequencySelect.value;
+            if (taskFrequency !== 'singleTime' && !startDate) {
+                alert('Date input required');
+                return;
+            }
             const checkboxes = document.querySelectorAll('#attendeesCheckboxes input:checked');
             const selectedAttendees = Array.from(checkboxes).map(cb => cb.value);
             const cycleAttendees = document.getElementById('cycleAttendees').checked;
-            const taskFrequencySelect = document.getElementById('taskFrequency');
-            const taskFrequency = taskFrequencySelect.value;
-            const customFrequency = taskFrequency === 'custom' ? document.getElementById('customFrequency').value : null;
-            const specificDate = taskFrequency === 'specificDate' ? document.getElementById('specificDate').value : null;
-            tasks.push({ task, user: currentUser, attendees: selectedAttendees, frequency: taskFrequency, customFrequency, specificDate, cycleAttendees, currentAttendeeIndex: 0 });
+            const customFrequency = taskFrequency === 'custom' ? document.getElementById('nrOfDays').value : null;
+            tasks.push({ task, startDate, user: currentUser, attendees: selectedAttendees, frequency: taskFrequency, customFrequency, cycleAttendees, currentAttendeeIndex: 0 });
             taskInput.value = '';
+            document.getElementById('startDate').value = '';
+            taskFrequencySelect.selectedIndex = 0;
+            document.getElementById('nrOfDays').style.display = 'none';
             renderTasks();
         }
 
@@ -139,8 +150,9 @@
                 taskDiv.className = 'task';
                 const currentAttendee = task.cycleAttendees ? task.attendees[task.currentAttendeeIndex] : task.attendees.join(', ');
                 taskDiv.innerHTML = `<strong>Task:</strong> ${task.task}<br>
+                                     <strong>Start Date:</strong> ${task.startDate}<br>
                                      <strong>Attendee(s):</strong> ${currentAttendee}<br>
-                                     <strong>Frequency:</strong> ${formatFrequency(task.frequency, task.customFrequency, task.specificDate)}`;
+                                     <strong>Frequency:</strong> ${formatFrequency(task.frequency, task.customFrequency)}`;
                 tasksContainer.appendChild(taskDiv);
                 if (task.cycleAttendees) {
                     task.currentAttendeeIndex = (task.currentAttendeeIndex + 1) % task.attendees.length;
@@ -149,17 +161,21 @@
         }
 
         function toggleFrequencyOptions() {
-            const taskFrequencySelect = document.getElementById('taskFrequency');
-            document.getElementById('customFrequency').style.display = taskFrequencySelect.value === 'custom' ? 'block' : 'none';
-            document.getElementById('specificDate').style.display = taskFrequencySelect.value === 'specificDate' ? 'block' : 'none';
+            const taskFrequencySelect = document.getElementById('frequencySelect');
+            const nrOfDaysInput = document.getElementById('nrOfDays');
+            if (taskFrequencySelect.value === 'custom') {
+                nrOfDaysInput.style.display = 'block';
+            } else {
+                nrOfDaysInput.style.display = 'none';
+            }
         }
 
-        function formatFrequency(frequency, customFrequency, specificDate) {
+        function formatFrequency(frequency, customFrequency) {
             switch (frequency) {
+                case 'singleTime':
+                    return 'Single Time';
                 case 'custom':
                     return `Every ${customFrequency} days`;
-                case 'specificDate':
-                    return `On ${specificDate}`;
                 default:
                     return frequency.charAt(0).toUpperCase() + frequency.slice(1);
             }
