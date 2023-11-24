@@ -119,7 +119,7 @@
 
     <script>
       const firebaseConfig = {
- 
+
       };
 
       firebase.initializeApp(firebaseConfig);
@@ -139,9 +139,32 @@
           currentUser = username;
           document.getElementById("loginSection").style.display = "none";
           document.getElementById("taskSection").style.display = "block";
+          fetchTasks();
         } else {
           alert("Invalid username or password");
         }
+      }
+
+      function fetchTasks() {
+        db.collection("tasks")
+          .where("user", "==", currentUser)
+          .get()
+          .then((querySnapshot) => {
+            const tasksContainer = document.getElementById("tasks");
+            tasksContainer.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+              const task = doc.data();
+              const taskDiv = document.createElement("div");
+              taskDiv.className = "task";
+              taskDiv.innerHTML = `<strong>Task:</strong> ${task.name}<br>
+                                 <strong>Start Date:</strong> ${task.startDate}<br>
+                                 <strong>Frequency:</strong> ${task.frequency}`;
+              tasksContainer.appendChild(taskDiv);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching tasks: ", error);
+          });
       }
 
       function addTaskFromForm() {
@@ -178,11 +201,19 @@
           .add(newTask)
           .then((docRef) => {
             console.log("Task added with ID: ", docRef.id);
+            fetchTasks();// Refresh the list of tasks 
             clearForm();
           })
           .catch((error) => {
             console.error("Error adding task: ", error);
           });
+      }
+
+      function toggleFrequencyOptions() {
+        const frequencySelect = document.getElementById("frequencySelect");
+        const nrOfDaysInput = document.getElementById("nrOfDays");
+        nrOfDaysInput.style.display =
+          frequencySelect.value === "custom" ? "block" : "none";
       }
 
       function clearForm() {
@@ -194,13 +225,6 @@
           .querySelectorAll("#attendeesCheckboxes input:checked")
           .forEach((cb) => (cb.checked = false));
         document.getElementById("cycleAttendees").checked = false;
-      }
-
-      function toggleFrequencyOptions() {
-        const frequencySelect = document.getElementById("frequencySelect");
-        const nrOfDaysInput = document.getElementById("nrOfDays");
-        nrOfDaysInput.style.display =
-          frequencySelect.value === "custom" ? "block" : "none";
       }
     </script>
   </body>
