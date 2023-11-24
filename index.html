@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Planner App</title>
     <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
     <style>
       body {
@@ -42,13 +41,13 @@
         box-sizing: border-box;
       }
       button {
-        background-color: #6a1b9a; /* Dark Purple Color */
+        background-color: #6a1b9a;
         color: white;
         border: none;
         cursor: pointer;
       }
       button:hover {
-        background-color: #7b1fa2; /* Slightly lighter purple for hover effect */
+        background-color: #7b1fa2;
       }
       .task {
         background-color: #e9ecef;
@@ -110,21 +109,27 @@
           <label><input type="checkbox" value="radu" /> Radu</label>
           <label><input type="checkbox" value="sepi" /> Sepi</label>
         </div>
-        <label id="cycleAttendeesLabel"
-          ><input type="checkbox" id="cycleAttendees" /> Cycle attendees</label
-        >
+        <label id="cycleAttendeesLabel">
+          <input type="checkbox" id="cycleAttendees" /> Cycle attendees
+        </label>
         <button onclick="addTaskFromForm()">Add Task</button>
         <div id="tasks"></div>
       </div>
     </div>
 
     <script>
+      const firebaseConfig = {
+ 
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
       let users = {
         marco: "randPass1",
         radu: "randPass2",
         sepi: "randPass3",
       };
-      let tasks = [];
       let currentUser = null;
 
       function login() {
@@ -134,140 +139,68 @@
           currentUser = username;
           document.getElementById("loginSection").style.display = "none";
           document.getElementById("taskSection").style.display = "block";
-          renderTasks();
         } else {
           alert("Invalid username or password");
         }
       }
 
-      function addTask() {
-        const taskInput = document.getElementById("taskInput");
-        const task = taskInput.value;
+      function addTaskFromForm() {
+        const taskName = document.getElementById("taskInput").value;
         const startDate = document.getElementById("startDate").value;
-        const taskFrequencySelect = document.getElementById("frequencySelect");
-        const taskFrequency = taskFrequencySelect.value;
-        if (taskFrequency !== "singleTime" && !startDate) {
-          alert("Date input required");
-          return;
-        }
-        const checkboxes = document.querySelectorAll(
+        const frequency = document.getElementById("frequencySelect").value;
+        const nrOfDays =
+          frequency === "custom"
+            ? document.getElementById("nrOfDays").value
+            : "";
+        const attendeesCheckboxes = document.querySelectorAll(
           "#attendeesCheckboxes input:checked"
         );
-        const selectedAttendees = Array.from(checkboxes).map((cb) => cb.value);
+        const attendees = Array.from(attendeesCheckboxes).map((cb) => cb.value);
         const cycleAttendees =
           document.getElementById("cycleAttendees").checked;
-        const customFrequency =
-          taskFrequency === "custom"
-            ? document.getElementById("nrOfDays").value
-            : null;
-        tasks.push({
-          task,
-          startDate,
-          user: currentUser,
-          attendees: selectedAttendees,
-          frequency: taskFrequency,
-          customFrequency,
-          cycleAttendees,
-          currentAttendeeIndex: 0,
-        });
-        taskInput.value = "";
-        document.getElementById("startDate").value = "";
-        taskFrequencySelect.selectedIndex = 0;
-        document.getElementById("nrOfDays").style.display = "none";
-        renderTasks();
 
-        console.log(task);
-        addTask(task);
-      }
-
-      function renderTasks() {
-        const tasksContainer = document.getElementById("tasks");
-        tasksContainer.innerHTML = "";
-        tasks.forEach((task) => {
-          const taskDiv = document.createElement("div");
-          taskDiv.className = "task";
-          const currentAttendee = task.cycleAttendees
-            ? task.attendees[task.currentAttendeeIndex]
-            : task.attendees.join(", ");
-          taskDiv.innerHTML = `<strong>Task:</strong> ${task.task}<br>
-                                     <strong>Start Date:</strong> ${
-                                       task.startDate
-                                     }<br>
-                                     <strong>Attendee(s):</strong> ${currentAttendee}<br>
-                                     <strong>Frequency:</strong> ${formatFrequency(
-                                       task.frequency,
-                                       task.customFrequency
-                                     )}`;
-          tasksContainer.appendChild(taskDiv);
-          if (task.cycleAttendees) {
-            task.currentAttendeeIndex =
-              (task.currentAttendeeIndex + 1) % task.attendees.length;
-          }
-        });
-      }
-
-      function toggleFrequencyOptions() {
-        const taskFrequencySelect = document.getElementById("frequencySelect");
-        const nrOfDaysInput = document.getElementById("nrOfDays");
-        if (taskFrequencySelect.value === "custom") {
-          nrOfDaysInput.style.display = "block";
-        } else {
-          nrOfDaysInput.style.display = "none";
-        }
-      }
-
-      function formatFrequency(frequency, customFrequency) {
-        switch (frequency) {
-          case "singleTime":
-            return "Single Time";
-          case "custom":
-            return `Every ${customFrequency} days`;
-          default:
-            return frequency.charAt(0).toUpperCase() + frequency.slice(1);
-        }
-      }
-
-      const firebaseConfig = {
-       //deleted for privacy
-      };
-
-      firebase.initializeApp(firebaseConfig);
-      var db = firebase.firestore();
-
-      function addTask(taskName) {
-        // Replace with the actual data object you are trying to save
-        const dataToSet = {
-          name: taskName,
-          // ... other fields
-        };
-
-        console.log(dataToSet); // Check if any field is undefined
-
-        // Ensure taskName is not undefined
-        if (typeof taskName === "undefined") {
-          console.error("Task name is undefined.");
+        if (!taskName || (frequency !== "singleTime" && !startDate)) {
+          alert("Please fill in all required fields.");
           return;
         }
 
+        const newTask = {
+          name: taskName,
+          startDate: startDate,
+          frequency: frequency,
+          nrOfDays: nrOfDays,
+          attendees: attendees,
+          cycleAttendees: cycleAttendees,
+          user: currentUser,
+        };
+
         db.collection("tasks")
-          .add(dataToSet)
+          .add(newTask)
           .then((docRef) => {
             console.log("Task added with ID: ", docRef.id);
+            clearForm();
           })
           .catch((error) => {
             console.error("Error adding task: ", error);
           });
       }
 
-      function addTaskFromForm() {
-        const taskName = document.getElementById("taskInput").value;
+      function clearForm() {
+        document.getElementById("taskInput").value = "";
+        document.getElementById("startDate").value = "";
+        document.getElementById("frequencySelect").selectedIndex = 0;
+        document.getElementById("nrOfDays").value = "";
+        document
+          .querySelectorAll("#attendeesCheckboxes input:checked")
+          .forEach((cb) => (cb.checked = false));
+        document.getElementById("cycleAttendees").checked = false;
+      }
 
-        if (!taskName) {
-          console.error("Task name is required.");
-          return;
-        }
-
-        addTask(taskName); // Call the function to add the task
+      function toggleFrequencyOptions() {
+        const frequencySelect = document.getElementById("frequencySelect");
+        const nrOfDaysInput = document.getElementById("nrOfDays");
+        nrOfDaysInput.style.display =
+          frequencySelect.value === "custom" ? "block" : "none";
       }
     </script>
   </body>
