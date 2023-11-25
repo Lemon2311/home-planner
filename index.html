@@ -14,8 +14,14 @@
         padding: 0;
         display: flex;
         justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+      .flex-center {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        height: 100vh;
+        width: 100%;
       }
       .container {
         background-color: white;
@@ -24,6 +30,7 @@
         border-radius: 8px;
         width: 100%;
         max-width: 400px;
+        margin-top: 20px;
       }
       h1 {
         color: #333;
@@ -86,52 +93,59 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Home Planner App</h1>
+    <div class="flex-center">
+      <div class="container">
+        <div class="container">
+          <h1>Home Planner App</h1>
 
-      <div id="loginSection">
-        <input type="text" id="usernameInput" placeholder="Username" />
-        <input type="password" id="passwordInput" placeholder="Password" />
-        <button onclick="login()">Login</button>
-      </div>
+          <div id="loginSection">
+            <input type="text" id="usernameInput" placeholder="Username" />
+            <input type="password" id="passwordInput" placeholder="Password" />
+            <button onclick="login()">Login</button>
+          </div>
 
-      <div id="taskSection" style="display: none">
-        <input type="text" id="taskInput" placeholder="Enter a task" />
-        <div id="dateFields">
-          <input
-            type="date"
-            id="startDate"
-            placeholder="Start Date"
-            onchange="toggleFrequencyOptions()"
-          />
-          <select id="frequencySelect" onchange="toggleFrequencyOptions()">
-            <option value="singleTime">Single Time</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="custom">Every few days</option>
-          </select>
-          <input
-            type="number"
-            id="nrOfDays"
-            placeholder="Nr of Days (for custom frequency)"
-            min="1"
-          />
+          <div id="taskSection" style="display: none">
+            <input type="text" id="taskInput" placeholder="Enter a task" />
+            <div id="dateFields">
+              <input
+                type="date"
+                id="startDate"
+                placeholder="Start Date"
+                onchange="toggleFrequencyOptions()"
+              />
+              <select id="frequencySelect" onchange="toggleFrequencyOptions()">
+                <option value="singleTime">Single Time</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="custom">Every few days</option>
+              </select>
+              <input
+                type="number"
+                id="nrOfDays"
+                placeholder="Nr of Days (for custom frequency)"
+                min="1"
+              />
+            </div>
+
+            <div id="attendeesCheckboxes">
+              <label><input type="checkbox" value="marco" /> Marco</label>
+              <label><input type="checkbox" value="radu" /> Radu</label>
+              <label><input type="checkbox" value="sepi" /> Sepi</label>
+            </div>
+            <label id="cycleAttendeesLabel">
+              <input type="checkbox" id="cycleAttendees" /> Cycle attendees
+            </label>
+            <button onclick="addTaskFromForm()">Add Task</button>
+            <div id="tasks"></div>
+          </div>
         </div>
-
-        <div id="attendeesCheckboxes">
-          <label><input type="checkbox" value="marco" /> Marco</label>
-          <label><input type="checkbox" value="radu" /> Radu</label>
-          <label><input type="checkbox" value="sepi" /> Sepi</label>
-        </div>
-        <label id="cycleAttendeesLabel">
-          <input type="checkbox" id="cycleAttendees" /> Cycle attendees
-        </label>
-        <button onclick="addTaskFromForm()">Add Task</button>
-        <div id="tasks"></div>
       </div>
     </div>
 
     <script>
+      
+      let testing = false; // Set this to true to bypass logIn
+
       const firebaseConfig = {
         apiKey: "AIzaSyAke-PNsJO4P0HMGZlVamz3DCG_xo40W2A",
         authDomain: "home-server-a5690.firebaseapp.com",
@@ -149,8 +163,8 @@
         radu: "randPass2",
         sepi: "randPass3",
       };
+
       let currentUser = null;
-      let testing = false; // Set this to false when testing is not needed
 
       function showTaskSection() {
         document.getElementById("loginSection").style.display = "none";
