@@ -7,4 +7,4 @@ Home planner app for room-mates in active development.
   working on : -> firebase db Crud operations
 
   Right now logIn is simulated because the backend is under development username:marco,password:randPass1;
-  firebaseConfig data was deleted manually before commit, will resolve with github secrets in the future.
+  firebaseConfig, no security rules right now for testing purposes
