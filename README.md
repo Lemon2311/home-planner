@@ -2,7 +2,7 @@
 Home planner app for room-mates in active development.
   
   done : -> Basic ui for logIn and adding Tasks
-         -> Connection to firebase and test add task with only a name as an attribute.
+         -> Connection to firebase and test add task with a few attributes working.
   
   working on : -> firebase db Crud operations
 
