@@ -54,6 +54,21 @@
         padding: 10px;
         border-radius: 4px;
         margin-bottom: 10px;
+        position: relative;
+        overflow: hidden;
+      }
+      .deleteTaskBtn {
+        display: inline-block;
+        margin-left: 10px;
+        color: white;
+        background-color: #ff4d4d;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .taskContent {
+        margin-bottom: 10px;
       }
       .task strong {
         color: #333;
@@ -82,7 +97,6 @@
 
       <div id="taskSection" style="display: none">
         <input type="text" id="taskInput" placeholder="Enter a task" />
-
         <div id="dateFields">
           <input
             type="date"
@@ -120,15 +134,10 @@
     <script>
       const firebaseConfig = {
         apiKey: "AIzaSyAke-PNsJO4P0HMGZlVamz3DCG_xo40W2A",
-
         authDomain: "home-server-a5690.firebaseapp.com",
-
         projectId: "home-server-a5690",
-
         storageBucket: "home-server-a5690.appspot.com",
-
         messagingSenderId: "497296621772",
-
         appId: "1:497296621772:web:b17121bfe91c027d4f4269",
       };
 
@@ -141,21 +150,33 @@
         sepi: "randPass3",
       };
       let currentUser = null;
+      let testing = false; // Set this to false when testing is not needed
+
+      function showTaskSection() {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("taskSection").style.display = "block";
+        fetchTasks();
+      }
 
       function login() {
+        if (testing) {
+          currentUser = "testUser"; // A default user for testing
+          showTaskSection();
+          return;
+        }
+
         const username = document.getElementById("usernameInput").value;
         const password = document.getElementById("passwordInput").value;
         if (users[username] && users[username] === password) {
           currentUser = username;
-          document.getElementById("loginSection").style.display = "none";
-          document.getElementById("taskSection").style.display = "block";
-          fetchTasks();
+          showTaskSection();
         } else {
           alert("Invalid username or password");
         }
       }
 
       function fetchTasks() {
+        // Fetch tasks created by the user or where the user is an attendee
         db.collection("tasks")
           .where("user", "==", currentUser)
           .get()
@@ -163,17 +184,67 @@
             const tasksContainer = document.getElementById("tasks");
             tasksContainer.innerHTML = "";
             querySnapshot.forEach((doc) => {
-              const task = doc.data();
-              const taskDiv = document.createElement("div");
-              taskDiv.className = "task";
-              taskDiv.innerHTML = `<strong>Task:</strong> ${task.name}<br>
-                                 <strong>Start Date:</strong> ${task.startDate}<br>
-                                 <strong>Frequency:</strong> ${task.frequency}`;
-              tasksContainer.appendChild(taskDiv);
+              displayTask(doc);
             });
           })
           .catch((error) => {
             console.error("Error fetching tasks: ", error);
+          });
+
+        // Additionally, fetch tasks where the current user is listed as an attendee
+        db.collection("tasks")
+          .where("attendees", "array-contains", currentUser)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              displayTask(doc);
+            });
+          })
+          .catch((error) => {
+            console.error(
+              "Error fetching tasks where user is an attendee: ",
+              error
+            );
+          });
+      }
+
+      function displayTask(doc) {
+        const task = doc.data();
+        const tasksContainer = document.getElementById("tasks");
+        const taskDiv = document.createElement("div");
+        taskDiv.className = "task";
+        taskDiv.innerHTML = `
+    <div class="taskContent">
+      <strong>Task:</strong> ${task.name}<br>
+      <strong>Start Date:</strong> ${task.startDate || "N/A"}<br>
+      <strong>Frequency:</strong> ${task.frequency}<br>
+      <strong>Number of Days:</strong> ${task.nrOfDays || "N/A"}<br>
+      <strong>Attendees:</strong> ${task.attendees.join(", ")}<br>
+      <strong>Cycle Attendees:</strong> ${
+        task.cycleAttendees ? "Yes" : "No"
+      }<br>
+      <button class="deleteTaskBtn" data-id="${doc.id}">Delete</button>
+    </div>`;
+        tasksContainer.appendChild(taskDiv);
+
+        // Adding event listener for delete button
+        taskDiv
+          .querySelector(".deleteTaskBtn")
+          .addEventListener("click", function () {
+            deleteTask(doc.id);
+          });
+      }
+
+      function deleteTask(taskId) {
+        db.collection("tasks")
+          .doc(taskId)
+          .delete()
+          .then(() => {
+            console.log("Task successfully deleted!");
+            fetchTasks();
+          })
+          .catch((error) => {
+            console.error("Error removing task: ", error);
           });
       }
 
@@ -211,7 +282,7 @@
           .add(newTask)
           .then((docRef) => {
             console.log("Task added with ID: ", docRef.id);
-            fetchTasks();// Refresh the list of tasks 
+            fetchTasks(); // Refresh the list of tasks
             clearForm();
           })
           .catch((error) => {
@@ -235,6 +306,10 @@
           .querySelectorAll("#attendeesCheckboxes input:checked")
           .forEach((cb) => (cb.checked = false));
         document.getElementById("cycleAttendees").checked = false;
+      }
+
+      if (testing) {
+        login();
       }
     </script>
   </body>
