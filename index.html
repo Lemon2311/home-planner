@@ -54,7 +54,7 @@
         cursor: pointer;
       }
       button:hover {
-        background-color: #7b1fa2;
+        color: #ff4d4d;
       }
       .task {
         background-color: #e9ecef;
@@ -66,9 +66,12 @@
       }
       .deleteTaskBtn {
         display: inline-block;
-        margin-left: 10px;
-        color: white;
-        background-color: #ff4d4d;
+        position: relative;
+        top:-100px;
+        left:85%;
+        width: 0px;
+        background-color: #e9ecef;
+        color:#7b1fa2;
         border: none;
         padding: 5px 10px;
         border-radius: 4px;
@@ -143,7 +146,7 @@
     </div>
 
     <script>
-      
+
       let testing = false; // Set this to true to bypass logIn
 
       const firebaseConfig = {
@@ -237,7 +240,7 @@
       <strong>Cycle Attendees:</strong> ${
         task.cycleAttendees ? "Yes" : "No"
       }<br>
-      <button class="deleteTaskBtn" data-id="${doc.id}">Delete</button>
+      <button class="deleteTaskBtn" data-id="${doc.id}"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
     </div>`;
         tasksContainer.appendChild(taskDiv);
 
@@ -325,6 +328,7 @@
       if (testing) {
         login();
       }
+      
     </script>
   </body>
 </html>
