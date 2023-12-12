@@ -1,429 +1,514 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Planner App</title>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Home Planner App</title>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
-  <style>
-    body {
-      font-family: "Arial", sans-serif;
-      background-color: #f4f7f6;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
+      .flex-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
 
-    .flex-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
+      .container {
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 20px;
+      }
 
-    .container {
-      background-color: white;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 400px;
-      margin-top: 20px;
-    }
 
-    h1 {
-      color: #333;
-      text-align: center;
-    }
+      .container:nth-child(1) {
+        background-color: white;
+        box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.2);
+      }
 
-    input,
-    select,
-    button,
-    label {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-      box-sizing: border-box;
-    }
+      .container:nth-child(1) .container {
+        background-color: white;
+        box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.2);
+      }
 
-    button {
-      background-color: #6a1b9a;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+      .container:nth-child(1) .container .container {
+        background-color: yellow;
+        box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.2);
+      }
 
-    button:hover {
-      color: #ff4d4d;
-    }
+      .container:nth-child(1) .container .container .container {
+        background-color: green;
+      }
 
-    .task {
-      background-color: #e9ecef;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      position: relative;
-      overflow: hidden;
-    }
+      .container:nth-child(1) .container .container .container .container {
+        background-color: blue;
+      }
 
-    .deleteTaskBtn {
-      display: inline-block;
-      position: relative;
-      top: -100px;
-      left: 85%;
-      width: 0px;
-      background-color: #e9ecef;
-      color: #7b1fa2;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+      .container:nth-child(1)
+        .container
+        .container
+        .container
+        .container
+        .container {
+        background-color: indigo;
+      }
 
-    .taskContent {
-      margin-bottom: 10px;
-    }
+      .container:nth-child(1)
+        .container
+        .container
+        .container
+        .container
+        .container
+        .container {
+        background-color: violet;
+      }
 
-    .task strong {
-      color: #333;
-    }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
 
-    #attendeesCheckboxes label,
-    #cycleAttendeesLabel {
-      display: block;
-      margin-bottom: 5px;
-    }
+      input,
+      select,
+      button,
+      label {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+      }
 
-    #customFrequency,
-    #nrOfDays {
-      display: none;
-      margin-top: 10px;
-    }
-  </style>
-</head>
+      button {
+        background-color: #6a1b9a;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
 
-<body>
-  <div class="flex-center">
-    <div class="container">
+      button:hover {
+        color: #ff4d4d;
+      }
+
+      .task {
+        background-color: #e9ecef;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        position: relative;
+
+        overflow: hidden;
+      }
+
+      .deleteTaskBtn {
+        display: inline-block;
+        position: relative;
+        top: -100px;
+        left: 85%;
+        width: 0px;
+        background-color: #e9ecef;
+        color: #7b1fa2;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .taskContent {
+        margin-bottom: 10px;
+      }
+
+      .task strong {
+        color: #333;
+      }
+
+      #attendeesCheckboxes label,
+      #cycleAttendeesLabel {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      #customFrequency,
+      #nrOfDays {
+        display: none;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="flex-center">
       <div class="container">
-        <h1>Home Planner App</h1>
+        <div class="container">
+          <h1>Home Planner App</h1>
 
-        <div id="loginSection">
-          <input type="text" id="usernameInput" placeholder="Username" />
-          <input type="password" id="passwordInput" placeholder="Password" />
-          <button onclick="login()">Login</button>
-        </div>
-
-        <div class="container" id="todaysTasksContainer" style="display: none;">
-          <h1>Today`s Tasks</h1>
-          <div id="todaysTasks">
-            <!--fetch todays tasks-->
+          <div id="loginSection">
+            <input type="text" id="usernameInput" placeholder="Username" />
+            <input type="password" id="passwordInput" placeholder="Password" />
+            <button onclick="login()">Login</button>
           </div>
 
-
-          <div class="container" id="addTaskContainer" style="display:none;">
-            <div id="taskSection" style="display: none">
-              <h1>Add Task</h1>
-              <input type="text" id="taskInput" placeholder="Enter a task" />
-              <div id="dateFields">
-                <input type="date" id="startDate" placeholder="Start Date" onchange="toggleFrequencyOptions()" />
-                <select id="frequencySelect" onchange="toggleFrequencyOptions()">
-                  <option value="singleTime">Single Time</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="custom">Every few days</option>
-                </select>
-                <input type="number" id="nrOfDays" placeholder="Nr of Days (for custom frequency)" min="1" />
-              </div>
-
-              <div id="attendeesCheckboxes">
-                <label><input type="checkbox" value="marco" /> Marco</label>
-                <label><input type="checkbox" value="radu" /> Radu</label>
-                <label><input type="checkbox" value="sepi" /> Sepi</label>
-              </div>
-              <label id="cycleAttendeesLabel">
-                <input type="checkbox" id="cycleAttendees" /> Cycle attendees
-              </label>
-              <button onclick="addTaskFromForm()">Add Task</button>
+          <div
+            class="container"
+            id="todaysTasksContainer"
+            style="display: none"
+          >
+            <h1>Today`s Tasks</h1>
+            <div id="todaysTasks">
+              <!--fetch todays tasks-->
             </div>
-            <div class="container" id="tasksSuperContainer" style="display:none">
-              <h1>Tasks:</h1>
-              <div id="tasks">
-                <!--fetched tasks-->
+
+            <div class="container" id="addTaskContainer" style="display: none">
+              <div id="taskSection" style="display: none">
+                <h1>Add Task</h1>
+                <input type="text" id="taskInput" placeholder="Enter a task" />
+                <div id="dateFields">
+                  <input
+                    type="date"
+                    id="startDate"
+                    placeholder="Start Date"
+                    onchange="toggleFrequencyOptions()"
+                  />
+                  <select
+                    id="frequencySelect"
+                    onchange="toggleFrequencyOptions()"
+                  >
+                    <option value="singleTime">Single Time</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="custom">Every few days</option>
+                  </select>
+                  <input
+                    type="number"
+                    id="nrOfDays"
+                    placeholder="Nr of Days (for custom frequency)"
+                    min="1"
+                  />
+                </div>
+
+                <div id="attendeesCheckboxes">
+                  <label><input type="checkbox" value="marco" /> Marco</label>
+                  <label><input type="checkbox" value="radu" /> Radu</label>
+                  <label><input type="checkbox" value="sepi" /> Sepi</label>
+                </div>
+                <label id="cycleAttendeesLabel">
+                  <input type="checkbox" id="cycleAttendees" /> Cycle attendees
+                </label>
+                <button onclick="addTaskFromForm()">Add Task</button>
+              </div>
+              <div
+                class="container"
+                id="tasksSuperContainer"
+                style="display: none"
+              >
+                <h1>Tasks:</h1>
+                <div id="tasks">
+                  <!--fetched tasks-->
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    let testing = false; // Set this to true to bypass logIn
+    <script>
+      let testing = false; // Set this to true to bypass logIn
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAke-PNsJO4P0HMGZlVamz3DCG_xo40W2A",
-      authDomain: "home-server-a5690.firebaseapp.com",
-      projectId: "home-server-a5690",
-      storageBucket: "home-server-a5690.appspot.com",
-      messagingSenderId: "497296621772",
-      appId: "1:497296621772:web:b17121bfe91c027d4f4269",
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    let users = {
-      marco: "randPass1",
-      radu: "randPass2",
-      sepi: "randPass3",
-    };
-
-    let currentUser = null;
-
-    function showTaskSection() {
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("taskSection").style.display = "block";
-      fetchTasks();
-    }
-
-    function login() {
-      if (testing) {
-        currentUser = "testUser"; // A default user for testing
-        showTaskSection();
-        return;
-      }
-
-      const username = document.getElementById("usernameInput").value;
-      const password = document.getElementById("passwordInput").value;
-      if (users[username] && users[username] === password) {
-        currentUser = username;
-        showTaskSection();
-      } else {
-        alert("Invalid username or password");
-      }
-
-      document.getElementById("todaysTasksContainer").style.display = "block";
-      document.getElementById("addTaskContainer").style.display = "block";
-      document.getElementById("tasksSuperContainer").style.display = "block";
-
-    }
-
-    function fetchTasks() {
-      // Fetch tasks created by the user or where the user is an attendee
-      db.collection("tasks")
-        .where("user", "==", currentUser)
-        .get()
-        .then((querySnapshot) => {
-          const tasksContainer = document.getElementById("tasks");
-          tasksContainer.innerHTML = "";
-          querySnapshot.forEach((doc) => {
-            displayTask(doc);
-          });
-        })
-        .catch((error) => {
-          console.error("Error fetching tasks: ", error);
-        });
-
-      // Additionally, fetch tasks where the current user is listed as an attendee
-      db.collection("tasks")
-        .where("attendees", "array-contains", currentUser)
-        .get()
-        .then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            const task = doc.data();
-            // Only display the task if the currentUser is not the task creator
-            // This prevents displaying duplicates if currentUser is both creator and an attendee
-            if (task.user !== currentUser) {
-              displayTask(doc);
-            }
-          });
-        })
-        .catch((error) => {
-          console.error(
-            "Error fetching tasks where user is an attendee: ",
-            error
-          );
-        });
-
-    }
-
-    function fetchTodaysTasks() {
-      db.collection("tasks")
-        .where("startDate", "==", currentDate)
-        .get()
-        .then((querySnapshot) => {
-          const tasksContainer = document.getElementById("todaysTasks");
-          tasksContainer.innerHTML = "";
-          querySnapshot.forEach((doc) => {
-            displayTask(doc);
-          });
-        })
-        .catch((error) => {
-          console.error("Error fetching todays tasks: ", error);
-        });
-    }
-
-    function displayTask(doc) {
-      const task = doc.data();
-      const tasksContainer = document.getElementById("tasks");
-      const taskDiv = document.createElement("div");
-      taskDiv.className = "task";
-      taskDiv.innerHTML = `
-    <div class="taskContent">
-      <strong>Task:</strong> ${task.name}<br>
-      <strong>Start Date:</strong> ${task.startDate || "N/A"}<br>
-      <strong>Frequency:</strong> ${task.frequency}<br>
-      <strong>Number of Days:</strong> ${task.nrOfDays || "N/A"}<br>
-      <strong>Attendees:</strong> ${task.attendees.join(", ")}<br>
-      <strong>Cycle Attendees:</strong> ${task.cycleAttendees ? "Yes" : "No"
-        }<br>
-      <button class="deleteTaskBtn" data-id="${doc.id
-        }"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
-    </div>`;
-      tasksContainer.appendChild(taskDiv);
-
-      // Adding event listener for delete button
-      taskDiv
-        .querySelector(".deleteTaskBtn")
-        .addEventListener("click", function () {
-          deleteTask(doc.id);
-        });
-    }
-
-    function deleteTask(taskId) {
-      db.collection("tasks")
-        .doc(taskId)
-        .delete()
-        .then(() => {
-          console.log("Task successfully deleted!");
-          fetchTasks();
-        })
-        .catch((error) => {
-          console.error("Error removing task: ", error);
-        });
-    }
-
-    function addTaskFromForm() {
-      const taskName = document.getElementById("taskInput").value;
-      const startDate = document.getElementById("startDate").value;
-      const frequency = document.getElementById("frequencySelect").value;
-      const nrOfDays =
-        frequency === "custom"
-          ? document.getElementById("nrOfDays").value
-          : "";
-      const attendeesCheckboxes = document.querySelectorAll(
-        "#attendeesCheckboxes input:checked"
-      );
-      const attendees = Array.from(attendeesCheckboxes).map((cb) => cb.value);
-      const cycleAttendees =
-        document.getElementById("cycleAttendees").checked;
-
-      if (!taskName || (frequency !== "singleTime" && !startDate)) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
-      const newTask = {
-        name: taskName,
-        startDate: startDate,
-        frequency: frequency,
-        nrOfDays: nrOfDays,
-        attendees: attendees,
-        cycleAttendees: cycleAttendees,
-        user: currentUser,
+      const firebaseConfig = {
+        apiKey: "AIzaSyAke-PNsJO4P0HMGZlVamz3DCG_xo40W2A",
+        authDomain: "home-server-a5690.firebaseapp.com",
+        projectId: "home-server-a5690",
+        storageBucket: "home-server-a5690.appspot.com",
+        messagingSenderId: "497296621772",
+        appId: "1:497296621772:web:b17121bfe91c027d4f4269",
       };
 
-      db.collection("tasks")
-        .add(newTask)
-        .then((docRef) => {
-          console.log("Task added with ID: ", docRef.id);
-          fetchTasks(); // Refresh the list of tasks
-          clearForm();
-        })
-        .catch((error) => {
-          console.error("Error adding task: ", error);
-        });
-    }
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
 
-    function toggleFrequencyOptions() {
-      const frequencySelect = document.getElementById("frequencySelect");
-      const nrOfDaysInput = document.getElementById("nrOfDays");
-      nrOfDaysInput.style.display =
-        frequencySelect.value === "custom" ? "block" : "none";
-    }
+      let users = {
+        marco: "randPass1",
+        radu: "randPass2",
+        sepi: "randPass3",
+      };
 
-    function clearForm() {
-      document.getElementById("taskInput").value = "";
-      document.getElementById("startDate").value = "";
-      document.getElementById("frequencySelect").selectedIndex = 0;
-      document.getElementById("nrOfDays").value = "";
-      document
-        .querySelectorAll("#attendeesCheckboxes input:checked")
-        .forEach((cb) => (cb.checked = false));
-      document.getElementById("cycleAttendees").checked = false;
-    }
+      let currentUser = null;
 
-    if (testing) {
-      login();
-    }
+      function showTaskSection() {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("taskSection").style.display = "block";
+        fetchTasks();
+      }
 
-    function fetchTodaysTasks(){
-      const currentDate = new Date().toISOString().split("T")[0]; // Get today's date in the format "YYYY-MM-DD"
+      function applyAfterLogInStyles() {
+        var firstContainer = document.querySelector(".container:nth-child(1)");
+        if (firstContainer) {
+          firstContainer.style.backgroundColor = "red";
+        }
 
-      db.collection("tasks")
-        .where("startDate", "==", currentDate)
-        .get()
-        .then((querySnapshot) => {
-          const tasksContainer = document.getElementById("todaysTasks");
-          tasksContainer.innerHTML = "";
+        // Select the nested .container and change its background to orange
+        var nestedContainer = document.querySelector(
+          ".container:nth-child(1) .container"
+        );
+        if (nestedContainer) {
+          nestedContainer.style.backgroundColor = "orange";
+        }
+      }
 
-          querySnapshot.forEach((doc) => {
-            displayTodaysTask(doc); // Use a separate function for displaying today's tasks
+      function login() {
+        if (testing) {
+          currentUser = "testUser"; // A default user for testing
+          showTaskSection();
+          return;
+        }
+
+        const username = document.getElementById("usernameInput").value;
+        const password = document.getElementById("passwordInput").value;
+        if (users[username] && users[username] === password) {
+          currentUser = username;
+          showTaskSection();
+          applyAfterLogInStyles();
+          showMenu();
+        } else {
+          alert("Invalid username or password");
+        }
+      }
+
+      function showMenu() {
+        document.getElementById("todaysTasksContainer").style.display = "block";
+        document.getElementById("addTaskContainer").style.display = "block";
+        document.getElementById("tasksSuperContainer").style.display = "block";
+      }
+
+      function fetchTasks() {
+        // Fetch tasks created by the user or where the user is an attendee
+        db.collection("tasks")
+          .where("user", "==", currentUser)
+          .get()
+          .then((querySnapshot) => {
+            const tasksContainer = document.getElementById("tasks");
+            tasksContainer.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+              displayTask(doc);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching tasks: ", error);
           });
-        })
-        .catch((error) => {
-          console.error("Error fetching today's tasks: ", error);
-        });
-    }
 
-    function displayTodaysTask(doc) {
-      const task = doc.data();
-      const tasksContainer = document.getElementById("todaysTasks");
-      const taskDiv = document.createElement("div");
-      taskDiv.className = "task";
-      taskDiv.innerHTML = `
+        // Additionally, fetch tasks where the current user is listed as an attendee
+        db.collection("tasks")
+          .where("attendees", "array-contains", currentUser)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              const task = doc.data();
+              // Only display the task if the currentUser is not the task creator
+              // This prevents displaying duplicates if currentUser is both creator and an attendee
+              if (task.user !== currentUser) {
+                displayTask(doc);
+              }
+            });
+          })
+          .catch((error) => {
+            console.error(
+              "Error fetching tasks where user is an attendee: ",
+              error
+            );
+          });
+      }
+
+      function fetchTodaysTasks() {
+        db.collection("tasks")
+          .where("startDate", "==", currentDate)
+          .get()
+          .then((querySnapshot) => {
+            const tasksContainer = document.getElementById("todaysTasks");
+            tasksContainer.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+              displayTask(doc);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching todays tasks: ", error);
+          });
+      }
+
+      function displayTask(doc) {
+        const task = doc.data();
+        const tasksContainer = document.getElementById("tasks");
+        const taskDiv = document.createElement("div");
+        taskDiv.className = "task";
+        taskDiv.innerHTML = `
     <div class="taskContent">
       <strong>Task:</strong> ${task.name}<br>
       <strong>Start Date:</strong> ${task.startDate || "N/A"}<br>
       <strong>Frequency:</strong> ${task.frequency}<br>
       <strong>Number of Days:</strong> ${task.nrOfDays || "N/A"}<br>
       <strong>Attendees:</strong> ${task.attendees.join(", ")}<br>
-      <strong>Cycle Attendees:</strong> ${task.cycleAttendees ? "Yes" : "No"}<br>
+      <strong>Cycle Attendees:</strong> ${
+        task.cycleAttendees ? "Yes" : "No"
+      }<br>
+      <button class="deleteTaskBtn" data-id="${
+        doc.id
+      }"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+    </div>`;
+        tasksContainer.appendChild(taskDiv);
+
+        // Adding event listener for delete button
+        taskDiv
+          .querySelector(".deleteTaskBtn")
+          .addEventListener("click", function () {
+            deleteTask(doc.id);
+          });
+      }
+
+      function deleteTask(taskId) {
+        db.collection("tasks")
+          .doc(taskId)
+          .delete()
+          .then(() => {
+            console.log("Task successfully deleted!");
+            fetchTasks();
+          })
+          .catch((error) => {
+            console.error("Error removing task: ", error);
+          });
+      }
+
+      function addTaskFromForm() {
+        const taskName = document.getElementById("taskInput").value;
+        const startDate = document.getElementById("startDate").value;
+        const frequency = document.getElementById("frequencySelect").value;
+        const nrOfDays =
+          frequency === "custom"
+            ? document.getElementById("nrOfDays").value
+            : "";
+        const attendeesCheckboxes = document.querySelectorAll(
+          "#attendeesCheckboxes input:checked"
+        );
+        const attendees = Array.from(attendeesCheckboxes).map((cb) => cb.value);
+        const cycleAttendees =
+          document.getElementById("cycleAttendees").checked;
+
+        if (!taskName || (frequency !== "singleTime" && !startDate)) {
+          alert("Please fill in all required fields.");
+          return;
+        }
+
+        const newTask = {
+          name: taskName,
+          startDate: startDate,
+          frequency: frequency,
+          nrOfDays: nrOfDays,
+          attendees: attendees,
+          cycleAttendees: cycleAttendees,
+          user: currentUser,
+        };
+
+        db.collection("tasks")
+          .add(newTask)
+          .then((docRef) => {
+            console.log("Task added with ID: ", docRef.id);
+            fetchTasks(); // Refresh the list of tasks
+            clearForm();
+          })
+          .catch((error) => {
+            console.error("Error adding task: ", error);
+          });
+      }
+
+      function toggleFrequencyOptions() {
+        const frequencySelect = document.getElementById("frequencySelect");
+        const nrOfDaysInput = document.getElementById("nrOfDays");
+        nrOfDaysInput.style.display =
+          frequencySelect.value === "custom" ? "block" : "none";
+      }
+
+      function clearForm() {
+        document.getElementById("taskInput").value = "";
+        document.getElementById("startDate").value = "";
+        document.getElementById("frequencySelect").selectedIndex = 0;
+        document.getElementById("nrOfDays").value = "";
+        document
+          .querySelectorAll("#attendeesCheckboxes input:checked")
+          .forEach((cb) => (cb.checked = false));
+        document.getElementById("cycleAttendees").checked = false;
+      }
+
+      if (testing) {
+        login();
+      }
+
+      function fetchTodaysTasks() {
+        const currentDate = new Date().toISOString().split("T")[0]; // Get today's date in the format "YYYY-MM-DD"
+
+        db.collection("tasks")
+          .where("startDate", "==", currentDate)
+          .get()
+          .then((querySnapshot) => {
+            const tasksContainer = document.getElementById("todaysTasks");
+            tasksContainer.innerHTML = "";
+
+            querySnapshot.forEach((doc) => {
+              displayTodaysTask(doc); // Use a separate function for displaying today's tasks
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching today's tasks: ", error);
+          });
+      }
+
+      function displayTodaysTask(doc) {
+        const task = doc.data();
+        const tasksContainer = document.getElementById("todaysTasks");
+        const taskDiv = document.createElement("div");
+        taskDiv.className = "task";
+        taskDiv.innerHTML = `
+    <div class="taskContent">
+      <strong>Task:</strong> ${task.name}<br>
+      <strong>Start Date:</strong> ${task.startDate || "N/A"}<br>
+      <strong>Frequency:</strong> ${task.frequency}<br>
+      <strong>Number of Days:</strong> ${task.nrOfDays || "N/A"}<br>
+      <strong>Attendees:</strong> ${task.attendees.join(", ")}<br>
+      <strong>Cycle Attendees:</strong> ${
+        task.cycleAttendees ? "Yes" : "No"
+      }<br>
       <button class="deleteTaskBtn" data-id="${doc.id}">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
           <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
         </svg>
       </button>
     </div>`;
-      tasksContainer.appendChild(taskDiv);
+        tasksContainer.appendChild(taskDiv);
 
-      // Adding event listener for delete button
-      taskDiv.querySelector(".deleteTaskBtn").addEventListener("click", function () {
-        deleteTask(doc.id);
-      });
-    }
+        // Adding event listener for delete button
+        taskDiv
+          .querySelector(".deleteTaskBtn")
+          .addEventListener("click", function () {
+            deleteTask(doc.id);
+          });
+      }
 
-    // Call this function to fetch and display today's tasks
-    fetchTodaysTasks();
-
-
-  </script>
-</body>
+      // Call this function to fetch and display today's tasks
+      fetchTodaysTasks();
+    </script>
+  </body>
+</html>
