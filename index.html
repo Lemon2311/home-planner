@@ -4,11 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Planner App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,900;1,400;1,700&family=Kalnia:wght@600&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
     <style>
       body {
-        font-family: "Arial", sans-serif;
+        font-family: "Figtree", sans-serif;
         background-color: #f4f7f6;
         margin: 0;
         padding: 0;
@@ -35,7 +41,6 @@
         margin-top: 20px;
       }
 
-
       .container:nth-child(1) {
         background-color: white;
         box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.2);
@@ -47,16 +52,16 @@
       }
 
       .container:nth-child(1) .container .container {
-        background-color: yellow;
+        background-color: white;
         box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.2);
       }
 
       .container:nth-child(1) .container .container .container {
-        background-color: green;
+        background-color: white;
       }
 
       .container:nth-child(1) .container .container .container .container {
-        background-color: blue;
+        background-color: white;
       }
 
       .container:nth-child(1)
@@ -81,6 +86,7 @@
       h1 {
         color: #333;
         text-align: center;
+        font-size: 36px;
       }
 
       input,
@@ -107,7 +113,7 @@
       }
 
       .task {
-        background-color: #e9ecef;
+        background-color: rgba(0, 0, 255, 0.5);
         padding: 10px;
         border-radius: 4px;
         margin-bottom: 10px;
@@ -122,12 +128,12 @@
         top: -100px;
         left: 85%;
         width: 0px;
-        background-color: #e9ecef;
         color: #7b1fa2;
         border: none;
         padding: 5px 10px;
         border-radius: 4px;
         cursor: pointer;
+        background-color: rgba(0, 0, 255, 0);
       }
 
       .taskContent {
@@ -149,6 +155,16 @@
         display: none;
         margin-top: 10px;
       }
+
+      .dots{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        opacity: 0.1;
+        pointer-events: none;
+      }
+      
     </style>
   </head>
 
@@ -157,7 +173,7 @@
       <div class="container">
         <div class="container">
           <h1>Home Planner App</h1>
-
+          <img src="" class="dots" id="dots"></img>
           <div id="loginSection">
             <input type="text" id="usernameInput" placeholder="Username" />
             <input type="password" id="passwordInput" placeholder="Password" />
@@ -217,7 +233,7 @@
                 id="tasksSuperContainer"
                 style="display: none"
               >
-                <h1>Tasks:</h1>
+                <h1>My Tasks:</h1>
                 <div id="tasks">
                   <!--fetched tasks-->
                 </div>
@@ -251,6 +267,16 @@
 
       let currentUser = null;
 
+      // Choose a random picture and use it as background
+      function randomizeDots() {
+        const imageUrls = ['ddots.jpg','ddots.jpg','dots.jpg'];
+        let dots = document.getElementById("dots");
+        let random = Math.floor(Math.random() * imageUrls.length);
+        dots.src = imageUrls[random];
+      }
+
+      randomizeDots();
+
       function showTaskSection() {
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("taskSection").style.display = "block";
@@ -260,7 +286,7 @@
       function applyAfterLogInStyles() {
         var firstContainer = document.querySelector(".container:nth-child(1)");
         if (firstContainer) {
-          firstContainer.style.backgroundColor = "red";
+          firstContainer.style.backgroundColor = "white";
         }
 
         // Select the nested .container and change its background to orange
@@ -268,9 +294,31 @@
           ".container:nth-child(1) .container"
         );
         if (nestedContainer) {
-          nestedContainer.style.backgroundColor = "orange";
+          nestedContainer.style.backgroundColor = "white";
         }
       }
+
+      // Add event listener for Enter key press
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          if (!currentUser) {
+            login();
+          }
+        }
+      });
+
+      function rotateImage() {
+      // Get the image element by its ID
+      const image = document.getElementById('dots');
+
+      // Generate a random rotation angle between 0 and 360 degrees
+      const randomRotation = Math.random() * 360;
+
+      // Apply the rotation transform to the image using CSS
+      image.style.transform = `rotate(${randomRotation}deg)`;
+      }
+
+      rotateImage();
 
       function login() {
         if (testing) {
@@ -286,6 +334,8 @@
           showTaskSection();
           applyAfterLogInStyles();
           showMenu();
+          randomizeDots();
+          rotateImage();
         } else {
           alert("Invalid username or password");
         }
