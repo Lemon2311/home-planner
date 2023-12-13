@@ -156,7 +156,7 @@
         margin-top: 10px;
       }
 
-      .dots{
+      .dots {
         position: absolute;
         top: 0;
         left: 0;
@@ -164,7 +164,6 @@
         opacity: 0.1;
         pointer-events: none;
       }
-      
     </style>
   </head>
 
@@ -173,7 +172,7 @@
       <div class="container">
         <div class="container">
           <h1>Home Planner App</h1>
-          <img src="" class="dots" id="dots"></img>
+          <img src="" class="dots" id="dots" />
           <div id="loginSection">
             <input type="text" id="usernameInput" placeholder="Username" />
             <input type="password" id="passwordInput" placeholder="Password" />
@@ -269,7 +268,7 @@
 
       // Choose a random picture and use it as background
       function randomizeDots() {
-        const imageUrls = ['ddots.jpg','ddots.jpg','dots.jpg'];
+        const imageUrls = ["ddots.jpg", "ddots.jpg", "dots.jpg"];
         let dots = document.getElementById("dots");
         let random = Math.floor(Math.random() * imageUrls.length);
         dots.src = imageUrls[random];
@@ -308,14 +307,14 @@
       });
 
       function rotateImage() {
-      // Get the image element by its ID
-      const image = document.getElementById('dots');
+        // Get the image element by its ID
+        const image = document.getElementById("dots");
 
-      // Generate a random rotation angle between 0 and 360 degrees
-      const randomRotation = Math.random() * 360;
+        // Generate a random rotation angle between 0 and 360 degrees
+        const randomRotation = Math.random() * 360;
 
-      // Apply the rotation transform to the image using CSS
-      image.style.transform = `rotate(${randomRotation}deg)`;
+        // Apply the rotation transform to the image using CSS
+        image.style.transform = `rotate(${randomRotation}deg)`;
       }
 
       rotateImage();
@@ -332,6 +331,7 @@
         if (users[username] && users[username] === password) {
           currentUser = username;
           showTaskSection();
+          fetchTodaysTasks();
           applyAfterLogInStyles();
           showMenu();
           randomizeDots();
@@ -382,22 +382,6 @@
               "Error fetching tasks where user is an attendee: ",
               error
             );
-          });
-      }
-
-      function fetchTodaysTasks() {
-        db.collection("tasks")
-          .where("startDate", "==", currentDate)
-          .get()
-          .then((querySnapshot) => {
-            const tasksContainer = document.getElementById("todaysTasks");
-            tasksContainer.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-              displayTask(doc);
-            });
-          })
-          .catch((error) => {
-            console.error("Error fetching todays tasks: ", error);
           });
       }
 
@@ -478,6 +462,7 @@
           .then((docRef) => {
             console.log("Task added with ID: ", docRef.id);
             fetchTasks(); // Refresh the list of tasks
+            fetchTodaysTasks(); // Refresh the list of today's tasks
             clearForm();
           })
           .catch((error) => {
@@ -512,13 +497,20 @@
 
         db.collection("tasks")
           .where("startDate", "==", currentDate)
+          .where("attendees", "array-contains", currentUser) // Check if the user is an attendee
           .get()
           .then((querySnapshot) => {
             const tasksContainer = document.getElementById("todaysTasks");
             tasksContainer.innerHTML = "";
 
             querySnapshot.forEach((doc) => {
-              displayTodaysTask(doc); // Use a separate function for displaying today's tasks
+              // Check if the user is either the creator or an attendee
+              if (
+                doc.data().user === currentUser ||
+                doc.data().attendees.includes(currentUser)
+              ) {
+                displayTodaysTask(doc);
+              }
             });
           })
           .catch((error) => {
@@ -556,9 +548,6 @@
             deleteTask(doc.id);
           });
       }
-
-      // Call this function to fetch and display today's tasks
-      fetchTodaysTasks();
     </script>
   </body>
 </html>
