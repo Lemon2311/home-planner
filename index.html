@@ -10,8 +10,6 @@
       href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,900;1,400;1,700&family=Kalnia:wght@600&display=swap"
       rel="stylesheet"
     />
-    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
     <style>
       body {
         font-family: "Figtree", sans-serif;
@@ -164,6 +162,31 @@
         opacity: 0.1;
         pointer-events: none;
       }
+
+      #gIcon {
+        width: 150px;
+        position: relative;
+        top: 50%;
+        left: 30%;
+      }
+
+      #gIcon:hover {
+        cursor: pointer;
+        filter: invert(100%);
+      }
+
+      .tooltip {
+        position: absolute;
+        transform: translateY(110%);
+        background-color: #000;
+        align-items: center;
+        color: #fff;
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 14px;
+        opacity: 0.8;
+        white-space: nowrap;
+      }
     </style>
   </head>
 
@@ -176,6 +199,7 @@
           <div id="loginSection">
             <input type="text" id="usernameInput" placeholder="Username" />
             <input type="password" id="passwordInput" placeholder="Password" />
+            <img id="gIcon" alt="Sign In with Google" src="google.png" />
             <button onclick="login()">Login</button>
           </div>
 
@@ -243,7 +267,15 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+      import { getFirestore } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+      } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
       let testing = false; // Set this to true to bypass logIn
 
       const firebaseConfig = {
@@ -255,8 +287,9 @@
         appId: "1:497296621772:web:b17121bfe91c027d4f4269",
       };
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
 
       let users = {
         marco: "randPass1",
@@ -546,6 +579,49 @@
           .querySelector(".deleteTaskBtn")
           .addEventListener("click", function () {
             deleteTask(doc.id);
+          });
+      }
+
+      const imgElement = document.getElementById("gIcon");
+
+      imgElement.addEventListener("mouseover", () => {
+        const altText = imgElement.getAttribute("alt");
+        const tooltip = document.createElement("div");
+        tooltip.classList.add("tooltip");
+        tooltip.textContent = altText;
+        document.body.appendChild(tooltip);
+
+        const imgRect = imgElement.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+
+        // Position the tooltip relative to the image
+        tooltip.style.top = imgRect.top - tooltipRect.height - 5 + "px";
+        tooltip.style.left =
+          imgRect.left + (imgRect.width - tooltipRect.width) / 2 + "px";
+      });
+
+      imgElement.addEventListener("mouseout", () => {
+        const tooltip = document.querySelector(".tooltip");
+        if (tooltip) {
+          tooltip.remove();
+        }
+      });
+
+      // Add an event listener to the button
+      document.getElementById("gIcon").addEventListener("click", googleSignIn);
+
+      // Function to initiate Google Sign-In
+      function googleSignIn() {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider)
+          .then((result) => {
+            // User signed in with Google successfully
+            const user = result.user;
+            console.log("User signed in with Google:", user);
+          })
+          .catch((error) => {
+            // Handle errors
+            console.error("Google Sign-In error:", error);
           });
       }
     </script>
